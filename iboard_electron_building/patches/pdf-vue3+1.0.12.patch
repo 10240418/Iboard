@@ -1,0 +1,51 @@
+diff --git a/node_modules/pdf-vue3/dist/pdf-vue3.js b/node_modules/pdf-vue3/dist/pdf-vue3.js
+index 3bad1be..6819c35 100644
+--- a/node_modules/pdf-vue3/dist/pdf-vue3.js
++++ b/node_modules/pdf-vue3/dist/pdf-vue3.js
+@@ -71,17 +71,36 @@ const Yl = {
+         disableAutoFetch: l.disableAutoFetch,
+         cMapUrl: l.cMapUrl
+       };
+-      if (l.src instanceof Uint8Array)
++      if (l.src instanceof Uint8Array) {
+         Z.data = l.src;
+-      else if (l.src.endsWith(".pdf"))
+-        Z.url = l.src;
+-      else {
+-        const d = atob(
+-          l.src.includes(",") ? l.src.split(",")[1] : l.src
+-        ), W = new Uint8Array(d.length);
+-        for (let b = 0; b < d.length; b++)
+-          W[b] = d.charCodeAt(b);
+-        Z.data = W;
++      } else {
++        try {
++          const url = new URL(l.src);
++          if (url.pathname.toLowerCase().endsWith(".pdf")) {
++            Z.url = l.src;
++          } else {
++            const base64String = url.search.includes(",") ? url.search.split(",")[1] : l.src;
++            const d = atob(base64String);
++            const W = new Uint8Array(d.length);
++            for (let b = 0; b < d.length; b++) {
++              W[b] = d.charCodeAt(b);
++            }
++            Z.data = W;
++          }
++        } catch (e) {
++          // 如果 URL 解析失败，回退到原有逻辑
++          if (l.src.split('?')[0].toLowerCase().endsWith(".pdf")) {
++            Z.url = l.src;
++          } else {
++            const base64String = l.src.includes(",") ? l.src.split(",")[1] : l.src;
++            const d = atob(base64String);
++            const W = new Uint8Array(d.length);
++            for (let b = 0; b < d.length; b++) {
++              W[b] = l.src.charCodeAt(b);
++            }
++            Z.data = W;
++          }
++        }
+       }
+       for (const d in Z)
+         Z[d] === void 0 && delete Z[d];

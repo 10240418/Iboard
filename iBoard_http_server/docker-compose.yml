@@ -1,0 +1,66 @@
+services:
+  backend:
+    build: .
+    container_name: iboard_http_service
+    restart: always
+    ports:
+      - "10031:10031"
+    environment:
+      - TZ=Asia/Shanghai
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=1090119your
+      - DB_NAME=iboard_db
+      - DB_TIMEZONE=Asia/Shanghai
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+      - REDIS_DB=0
+    volumes:
+      - ./logs:/app/logs
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - iboard-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: iboard_mysql
+    restart: always
+    ports:
+      - "3308:3306"
+    environment:
+      - TZ=Asia/Shanghai
+      - MYSQL_ROOT_PASSWORD=1090119your
+      - MYSQL_DATABASE=iboard_db
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - iboard-network
+
+
+  redis:
+    image: redis:7.4.1
+    container_name: iboard_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - redis_data:/data
+    networks:
+      - iboard-network
+
+networks:
+  iboard-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    name: iboard_mysql_data
+  redis_data:
+    name: iboard_redis_data

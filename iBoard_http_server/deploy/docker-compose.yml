@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: iboard_http_service
+    restart: always
+    ports:
+      - "10031:10031"
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=1090119your
+      - DB_NAME=iboard_db
+      - DB_TIMEZONE=Asia/Shanghai
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+      - REDIS_DB=0
+    volumes:
+      - ../logs:/app/logs
+      - ../migrations:/app/migrations
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - iboard-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10031/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mysql:
+    image: mysql:8.0
+    container_name: iboard_mysql
+    restart: always
+    ports:
+      - "3308:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=1090119your
+      - MYSQL_DATABASE=iboard_db
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ../migrations:/docker-entrypoint-initdb.d
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - iboard-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p1090119your"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.4.1
+    container_name: iboard_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - iboard-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  iboard-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  redis_data: 

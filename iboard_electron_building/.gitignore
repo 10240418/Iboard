@@ -1,0 +1,12 @@
+node_modules
+dist
+out
+.DS_Store
+*.log*
+src/renderer/src/assets/img/*
+src/renderer/src/assets/video/*
+src/renderer/src/assets/pdf/*
+.history
+/ad
+/static
+/notice
